@@ -1,0 +1,1 @@
+IMPORTANT: Stop old server, extract this ZIP, run START-SAHAYAK.bat, then Ctrl+F5. Signup now creates the Atlas account and immediately verifies login using the same credentials. Login errors from the API are no longer all mislabeled as wrong password.

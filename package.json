@@ -1,0 +1,19 @@
+{
+  "name": "sahayak-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sahayak Desk local frontend + MongoDB Atlas API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.22.2",
+    "mongodb": "^6.19.0",
+    "mongoose": "^9.9.5",
+    "nodemailer": "^10.0.0"
+  }
+}

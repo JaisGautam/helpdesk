@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const bcrypt = require("bcryptjs");
+const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 
 const app = express();
@@ -14,6 +15,20 @@ if (!MONGO_URI) {
   console.error("MONGO_URI missing. Put it in .env");
   process.exit(1);
 }
+app.use(cors({
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Accept"],
+    credentials: false
+}));
+
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+    if (req.method === "OPTIONS") return res.sendStatus(200);
+    next();
+});
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -433,6 +448,19 @@ app.get("/api/health",(req,res)=>res.json({ok:true,db:!!db}));
 app.get(["/admin/signup", "/admin/signup/", "/admin-signup.html"], (req,res)=>
   res.sendFile(path.join(__dirname,"admin-signup.html"))
 );
+
+// ✅ widget.js — explicit CORS ke saath
+app.get("/widget.js", (req, res) => {
+    res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.sendFile(path.join(__dirname, "widget.js"), (err) => {
+        if (err) {
+            console.error("widget.js not found:", err.message);
+            res.status(404).send("// widget.js not found");
+        }
+    });
+});
 
 app.get(/^\/assets\/(.+)$/i, (req,res,next)=>{
   const file = path.basename(req.params[0]);

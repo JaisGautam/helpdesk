@@ -103,7 +103,7 @@ a{color:#52c9c2;text-decoration:none;font-size:13px}.msg{margin-top:14px;font-si
 <p style="margin-top:18px"><a href="./tickets">← Back to Admin Login</a></p> 
 <p class="muted" style="margin-top:10px">This page is only for creating an Admin account. Customers do not need to sign up.</p> 
 </div></div> 
-<script> 
+<!-- <script> 
 const f=document.getElementById('f'),msg=document.getElementById('msg'),btn=document.getElementById('btn'); 
 const nameInput=document.getElementById('name'); 
 const emailInput=document.getElementById('email'); 
@@ -138,7 +138,44 @@ f.addEventListener('submit',async e=>{
   setTimeout(()=>location.href='/',300); 
  }catch(x){msg.textContent=x.message;msg.style.display='block'}finally{btn.disabled=false;btn.textContent='Admin create karein'} 
 }); 
-</script> 
+</script>  -->
+<script> 
+const f=document.getElementById('f'),msg=document.getElementById('msg'),btn=document.getElementById('btn'); 
+const nameInput=document.getElementById('name'); 
+const emailInput=document.getElementById('email'); 
+const passwordInput=document.getElementById('password'); 
+ 
+async function checkServer(){ 
+  try{ 
+    const r=await fetch('/api/health',{cache:'no-store'}); 
+    if(!r.ok) throw new Error('Server response error'); 
+    const d=await r.json(); 
+    if(!d.db) throw new Error('MongoDB is not connected'); 
+  }catch(e){ 
+    msg.textContent='Server/MongoDB is not ready. Please start Sahayak Desk first.'; 
+    msg.style.display='block'; 
+    msg.style.color='#f6b6b6'; 
+    btn.disabled=true; 
+  } 
+} 
+checkServer(); 
+f.addEventListener('submit',async e=>{ 
+ e.preventDefault();msg.style.display='none';btn.disabled=true;btn.textContent='Creating account…'; 
+ try{ 
+  const r=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'}, 
+   body:JSON.stringify({name:nameInput.value.trim(),email:emailInput.value.trim(),password:passwordInput.value})}); 
+  const d=await r.json(); if(!r.ok) throw new Error(d.message||('Signup failed ('+r.status+')')); 
+  // Immediately verify the newly created account with the same API used by login. 
+  const lr=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:emailInput.value.trim(),password:passwordInput.value})}); 
+  const ld=await lr.json(); 
+  if(!lr.ok) throw new Error('Account was created, but login verification failed: '+(ld.message||'login failed')); 
+  localStorage.setItem('sahayak_agent',JSON.stringify(ld)); 
+  msg.textContent='Admin account created and logged in. Opening dashboard…';msg.style.display='block'; 
+  setTimeout(()=>location.href='/',300); 
+ }catch(x){msg.textContent=x.message;msg.style.display='block'}finally{btn.disabled=false;btn.textContent='Create Admin Account'} 
+}); 
+</script>
+
 </body></html>
 
 

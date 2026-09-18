@@ -133,7 +133,8 @@
       tip = document.createElement('div');
       tip.className = 'sd-tip';
       tip.innerHTML =
-        '<b>Koi dikkat aa rahi hai?</b>Yahan se ticket raise karein — hum jaldi reply karte hain.<button aria-label="Band karein">&times;</button>';
+        // '<b>Koi dikkat aa rahi hai?</b>Yahan se ticket raise karein — hum jaldi reply karte hain.<button aria-label="Band karein">&times;</button>';
+        '</b>Having trouble with something?</b>Raise a ticket here — we’ll reply as soon as possible.<button aria-label="Close">&times;</button>';
       tip.querySelector('button').addEventListener('click', function (ev) {
         ev.stopPropagation();
         tip.remove();

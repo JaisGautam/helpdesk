@@ -335,7 +335,8 @@ app.post("/api/tickets/:id/messages",async(req,res)=>{
   const created=now();
   await db.collection("messages").insertOne({ticketId:id,authorType,authorName,agentId:agentId?oid(agentId):null,body:String(body).trim(),internal:!!internal,createdAt:created});
   await db.collection("tickets").updateOne({_id:id},{$inc:{messageCount:1}});
-  await db.collection("activities").insertOne({ticketId:id,actor:authorName,text:internal?"Added an internal note, sent a reply",createdAt:created});
+  // await db.collection("activities").insertOne({ticketId:id,actor:authorName,text:internal?"Added an internal note, sent a reply",createdAt:created});
+ await db.collection("activities").insertOne({ticketId:id,actor:authorName,text:internal?"Added an internal note":"Sent a reply",createdAt:created});
   const patch={updatedAt:created};
   if(authorType==="agent"&&!internal&&!t.firstResponseAt)patch.firstResponseAt=created;
   await db.collection("tickets").updateOne({_id:id},{$set:patch});

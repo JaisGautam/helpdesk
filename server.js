@@ -159,7 +159,7 @@ app.get("/api/agents", async (req,res) => {
 app.post("/api/agents", async (req,res) => {
   try {
     const {name,email,password="demo123",team="Support",role="agent",active=1}=req.body||{};
-    if(!name||!email) return res.status(400).json({message:"Name aur email required"});
+    if(!name||!email) return res.status(400).json({message:"Name and email required"});
     const em=normalizeEmail(email);
     if(await db.collection("agents").findOne({email:em})) return res.status(409).json({message:"Email already exists"});
     const doc={name:String(name).trim(),email:em,password:await bcrypt.hash(String(password),10),

@@ -70,69 +70,75 @@ f.addEventListener('submit',async e=>{
 
 
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
 
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1"
-    />
+<!doctype html> 
+<html lang="hi"> 
+<head> 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width,initial-scale=1"> 
+<title>Sahayak Desk — Admin Signup</title> 
+<link rel="stylesheet" href="./assets/index-Cnb-RC22.css"> 
+<style> 
+body{margin:0;min-height:100vh;background:#0f1719;color:#eef5f4;font-family:Inter,system-ui,sans-serif} 
+.wrap{min-height:100vh;display:grid;place-items:center;padding:24px} 
+.card{width:min(420px,100%);background:#152023;border:1px solid #2a383b;border-radius:18px;padding:28px;box-sizing:border-box} 
+h1{margin:0 0 8px;font-size:24px}.muted{color:#91a3a5;font-size:13px;line-height:1.5} 
+label{display:block;font-size:13px;margin:18px 0 7px}input{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:9px;border:1px solid #344548;background:#0e1719;color:#fff;outline:none} 
+button{width:100%;margin-top:20px;padding:12px;border:0;border-radius:9px;background:#1aa7a0;color:#fff;font-weight:700;cursor:pointer} 
+a{color:#52c9c2;text-decoration:none;font-size:13px}.msg{margin-top:14px;font-size:13px;display:none}.brand{font-weight:800;margin-bottom:24px} 
+</style> 
+</head> 
+<body> 
+<div class="wrap"><div class="card"> 
+<div class="brand">◆ Sahayak Desk</div> 
+<h1>Create an Admin Account</h1> 
+<p class="muted">A new administrator will be saved in MongoDB Atlas. After signup, you can proceed to the Admin Dashboard.</p> 
+<form id="f"> 
+<label>Name</label><input id="name" required minlength="2" placeholder="Your name"> 
+<label>Email</label><input id="email" type="email" required placeholder="admin@example.com"> 
+<label>Password</label><input id="password" type="password" required minlength="6" placeholder="Minimum 6 characters"> 
+<button id="btn">Create Admin Account</button> 
+<div id="msg" class="msg"></div> 
+</form> 
+<p style="margin-top:18px"><a href="./tickets">← Back to Admin Login</a></p> 
+<p class="muted" style="margin-top:10px">This page is only for creating an Admin account. Customers do not need to sign up.</p> 
+</div></div> 
+<script> 
+const f=document.getElementById('f'),msg=document.getElementById('msg'),btn=document.getElementById('btn'); 
+const nameInput=document.getElementById('name'); 
+const emailInput=document.getElementById('email'); 
+const passwordInput=document.getElementById('password'); 
+ 
+async function checkServer(){ 
+  try{ 
+    const r=await fetch('/api/health',{cache:'no-store'}); 
+    if(!r.ok) throw new Error('Server response error'); 
+    const d=await r.json(); 
+    if(!d.db) throw new Error('MongoDB connected nahi hai'); 
+  }catch(e){ 
+    msg.textContent='Server/MongoDB ready nahi hai. Pehle Sahayak Desk start karein.'; 
+    msg.style.display='block'; 
+    msg.style.color='#f6b6b6'; 
+    btn.disabled=true; 
+  } 
+} 
+checkServer(); 
+f.addEventListener('submit',async e=>{ 
+ e.preventDefault();msg.style.display='none';btn.disabled=true;btn.textContent='Create ho raha hai…'; 
+ try{ 
+  const r=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'}, 
+   body:JSON.stringify({name:nameInput.value.trim(),email:emailInput.value.trim(),password:passwordInput.value})}); 
+  const d=await r.json(); if(!r.ok) throw new Error(d.message||('Signup failed ('+r.status+')')); 
+  // Immediately verify the newly created account with the same API used by login. 
+  const lr=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:emailInput.value.trim(),password:passwordInput.value})}); 
+  const ld=await lr.json(); 
+  if(!lr.ok) throw new Error('Account create ho gaya, lekin login verify nahi hua: '+(ld.message||'login failed')); 
+  localStorage.setItem('sahayak_agent',JSON.stringify(ld)); 
+  msg.textContent='Admin account create aur login ho gaya. Dashboard khul raha hai…';msg.style.display='block'; 
+  setTimeout(()=>location.href='/',300); 
+ }catch(x){msg.textContent=x.message;msg.style.display='block'}finally{btn.disabled=false;btn.textContent='Admin create karein'} 
+}); 
+</script> 
+</body></html>
 
-    <link rel="icon" type="image/png" href="/favicon.png" />
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-
-    <link
-      href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..900;1,18..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:wght@0,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:wght@0,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Fontshare -->
-    <link
-      href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&f[]=cabinet-grotesk@500,700,800&display=swap"
-      rel="stylesheet"
-    />
-
-    <title>Sahayak Desk — Help Desk & Ticketing System</title>
-
-    <meta
-      name="description"
-      content="Sahayak Desk is a complete help desk with an embeddable support widget, ticketing, SLA tracking, knowledge base, canned replies, and analytics."
-    />
-
-    <meta
-      property="og:title"
-      content="Sahayak Desk — Help Desk & Ticketing"
-    />
-
-    <meta
-      property="og:description"
-      content="A support widget that can be attached to any website with a single script tag, along with a full agent dashboard."
-    />
-
-    <meta property="og:type" content="website" />
-
-    <!-- REAL FRONTEND -->
-    <script
-      type="module"
-      crossorigin
-      src="./assets/index-vUsddx2I.js"
-    ></script>
-
-    <link
-      rel="stylesheet"
-      crossorigin
-      href="./assets/index-Cnb-RC22.css"
-    />
-  </head>
-
-  <body>
-    <div id="root"></div>
-  </body>
-
-</html>
 

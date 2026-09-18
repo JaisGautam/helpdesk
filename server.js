@@ -137,12 +137,12 @@ app.post("/api/auth/signup", async (req,res) => {
     const {name,email,password} = req.body || {};
     console.log("\n[SIGNUP] raw body:", req.body);
     if (!name || !email || !password || String(password).length < 6)
-      return res.status(400).json({message:"Name, valid email aur 6+ character password zaroori hai"});
+      return res.status(400).json({message:"Name, valid email aur 6+ character password  are Required"});
     const em=normalizeEmail(email);
     const dup = await db.collection("agents").findOne({email:em});
     if (dup) {
       console.log("[SIGNUP] duplicate email found:", em);
-      return res.status(409).json({message:"Ye email already registered hai"});
+      return res.status(409).json({message:"Email already exists"});
     }
     const doc={name:String(name).trim(),email:em,password:await bcrypt.hash(String(password),10),
       role:"admin",team:"Support",active:true,createdAt:now()};
@@ -188,9 +188,9 @@ app.delete("/api/agents/:id", async(req,res)=>{
 
 async function createTicket(body, source) {
   const {subject,description,customerName,customerEmail,category="General",priority="medium"}=body||{};
-  if(!subject||String(subject).trim().length<4) throw new Error("Subject kam se kam 4 characters ka ho");
-  if(!description||String(description).trim().length<8) throw new Error("Detail kam se kam 8 characters ki ho");
-  if(!customerName||String(customerName).trim().length<2) throw new Error("Naam required");
+  if(!subject||String(subject).trim().length<4) throw new Error("The subject should be at least 4 characters long");
+  if(!description||String(description).trim().length<8) throw new Error("The detail should be at least 8 characters long");
+  if(!customerName||String(customerName).trim().length<2) throw new Error("Name required");
   if(!customerEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) throw new Error("Valid email required");
   const t=now(), due=new Date(Date.now()+priorityHours(priority)*3600000).toISOString();
   const doc={ref:await nextRef(),subject:String(subject).trim(),customerName:String(customerName).trim(),
@@ -201,7 +201,7 @@ async function createTicket(body, source) {
   await db.collection("messages").insertOne({_id:new ObjectId(),ticketId:r.insertedId,authorType:"customer",
     authorName:doc.customerName,agentId:null,body:String(description).trim(),internal:false,createdAt:t});
   await db.collection("tickets").updateOne({_id:r.insertedId},{$set:{messageCount:1}});
-  await db.collection("activities").insertOne({ticketId:r.insertedId,actor:doc.customerName,text:"Ticket create kiya",createdAt:t});
+  await db.collection("activities").insertOne({ticketId:r.insertedId,actor:doc.customerName,text:"Created a ticket",createdAt:t});
   return publicTicket({...doc,_id:r.insertedId,messageCount:1});
 }
 
@@ -335,7 +335,7 @@ app.post("/api/tickets/:id/messages",async(req,res)=>{
   const created=now();
   await db.collection("messages").insertOne({ticketId:id,authorType,authorName,agentId:agentId?oid(agentId):null,body:String(body).trim(),internal:!!internal,createdAt:created});
   await db.collection("tickets").updateOne({_id:id},{$inc:{messageCount:1}});
-  await db.collection("activities").insertOne({ticketId:id,actor:authorName,text:internal?"Internal note add kiya":"Reply bheja",createdAt:created});
+  await db.collection("activities").insertOne({ticketId:id,actor:authorName,text:internal?"Added an internal note, sent a reply",createdAt:created});
   const patch={updatedAt:created};
   if(authorType==="agent"&&!internal&&!t.firstResponseAt)patch.firstResponseAt=created;
   await db.collection("tickets").updateOne({_id:id},{$set:patch});
@@ -365,7 +365,7 @@ app.post("/api/public/tickets/:ref/messages",async(req,res)=>{
   const body=String(req.body?.body||"").trim();if(!body)return res.status(400).json({message:"Message empty"});
   const created=now();await db.collection("messages").insertOne({_id:new ObjectId(),ticketId:t._id,authorType:"customer",authorName:t.customerName,agentId:null,body,internal:false,createdAt:created});
   await db.collection("tickets").updateOne({_id:t._id},{$set:{updatedAt:created,status:t.status==="resolved"?"open":t.status},$inc:{messageCount:1}});
-  await db.collection("activities").insertOne({ticketId:t._id,actor:t.customerName,text:"Customer ne reply bheja",createdAt:created});
+  await db.collection("activities").insertOne({ticketId:t._id,actor:t.customerName,text:"The customer sent a reply",createdAt:created});
   res.json({ok:true});
 });
 app.post("/api/public/tickets/:ref/csat",async(req,res)=>{
